@@ -281,9 +281,7 @@ contract NDCA_V2 is Ownable {
         require(block.timestamp >= dca.users[currentUser].nextDcaTime, "NEON: Execution not required yet");
         
         uint256 amount = dca.users[currentUser].srcAmount;
-        require(srcToken.balanceOf(currentUser) >= amount, "NEON: Insufficient amount");
-        require(srcToken.allowance(currentUser, address(this)) >= amount, "NEON: Insufficient approved token");
-        if(dca.users[currentUser].fundsTransfer == false){
+        if(dca.users[currentUser].fundsTransfer == false && srcToken.balanceOf(currentUser) >= amount && srcToken.allowance(currentUser, address(this)) >= amount){
             dca.users[currentUser].fundsTransfer = true;
             require(srcToken.transferFrom(currentUser, neonRouter, amount), "NEON: Funds transfer error");
             emit GetFunds(currentUser, dca.srcToken, amount, block.timestamp);
@@ -311,7 +309,6 @@ contract NDCA_V2 is Ownable {
         IERC20 srcToken = IERC20(dca.srcToken);
         address currentUser = dca.usersList[_userIndex];
         require(block.timestamp >= dca.users[currentUser].nextDcaTime, "NEON: Execution not required yet");
-        require(dca.users[currentUser].fundsTransfer == true, "NEON: Funds not claimed");
         uint256 amount = dca.users[currentUser].srcAmount;
         uint256 tau = dca.users[currentUser].tau;
         uint256 tauSeconds = tau.mul(24*60*60);
